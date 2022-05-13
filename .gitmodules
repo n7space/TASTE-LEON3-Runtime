@@ -1,0 +1,3 @@
+[submodule "Leon3-BSP"]
+	path = Leon3-BSP
+	url = git@github.com:n7space/Leon3-BSP.git
