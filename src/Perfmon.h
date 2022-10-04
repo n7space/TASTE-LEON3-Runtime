@@ -25,7 +25,7 @@
 
 /**
  * @file    Perfmon.h
- * @brief   Headers for performance monitoring of TASTE interfaces
+ * @brief   Header for performance monitoring of TASTE interfaces
  */
 
 #include "interfaces_info.h"
@@ -39,6 +39,9 @@
 #include <rtems/score/threadimpl.h>
 #include <rtems/score/todimpl.h>
 
+/**
+ * @brief   Struct representing usage and benchmarking data for the given interface
+ */
 typedef struct 
 {
     uint32_t          id;
@@ -55,6 +58,9 @@ typedef struct
     double            microseconds_spent_by_interface_mean_val;
 } Interface_Usage_Data;
 
+/**
+ * @brief   Struct representing usage data for summarized states
+ */
 typedef struct 
 {
     char              name[MAX_THREAD_NAME_SIZE];
@@ -63,6 +69,9 @@ typedef struct
     float             cpu_usage_mean_val;
 } Summarized_Usage_Data;
 
+/**
+ * @brief   Struct representing Perfmon context
+ */
 typedef struct 
 {
     Timestamp_Control        CPU_usage_Uptime_at_last_reset;
@@ -75,21 +84,80 @@ typedef struct
     Timestamp_Control        uptime_at_last_reset;
 } Perf_Mon;
 
-
+/**
+ * @brief   Returns thread information object
+ *
+ * @param[in] perf_mon_ctx     Perfmon context
+ * @param[in] threadId         Id of the thread
+ *
+ * @return  Thread information object
+ */
 static thread_info Perf_Mon_getThreadInfo(Perf_Mon *perf_mon_ctx, uint64_t threadId);
 
+/**
+ * @brief   Visitor, updates benchmarking data of the thread,
+ *          check rtems_task_iterate
+ *
+ * @param[in] the_thread       Thread for benchmarking data extraction
+ * @param[in] arg              Argument pointer, should be Perfmon context
+ *
+ * @return  Returns false
+ */
 static bool Perf_Mon_cpuUsageVisitor(Thread_Control *the_thread, void *arg);
 
+/**
+ * @brief   Visitor, initialize benchmarking data of the thread,
+ *          check rtems_task_iterate
+ *
+ * @param[in] the_thread       Thread for benchmarking data extraction
+ * @param[in] arg              Argument pointer, should be Perfmon context
+ *
+ * @return  Returns false
+ */
 static bool Perf_Mon_dataInitVisitor(Thread_Control *the_thread, void *arg);
 
+/**
+ * @brief   Perfom initializer, should be invoked during benchmarking interface startup
+ *
+ * @param[in] perf_mon_ctx     Perfmon context
+ */
 void Perf_Mon_init(Perf_Mon *perf_mon_ctx);
 
+/**
+ * @brief   Perfom tick, updates interfaces benchmarking information data
+ *          should be invoked in benchmarking thread loop
+ *
+ * @param[in] perf_mon_ctx     Perfmon context
+ */
 void Perf_Mon_tick(Perf_Mon *perf_mon_ctx);
 
+/**
+ * @brief   Gets benchmarking information data for a given thread
+ *
+ * @param[in] perf_mon_ctx       Perfmon context
+ * @param[in] interface          Enum representing given interface, check interfaces_info.h
+ * @param[in] system_frequency   system frequency given in Hz
+ * 
+ * @return  Returns benchmarking information data
+ */
 Interface_Usage_Data Perf_Mon_getUsageData(Perf_Mon *perf_mon_ctx, enum interfaces_enum interface, double system_frequency);
 
+/**
+ * @brief   Gets benchmarking information data for Idle state
+ *
+ * @param[in] perf_mon_ctx       Perfmon context
+ * 
+ * @return  Returns benchmarking information data for Idle state
+ */
 Summarized_Usage_Data Perf_Mon_getIdleUsageData(Perf_Mon *perf_mon_ctx);
 
+/**
+ * @brief   Gets benchmarking information data for all interfaces summarized
+ *
+ * @param[in] perf_mon_ctx       Perfmon context
+ * 
+ * @return  Returns benchmarking information data for all interfaces
+ */
 Summarized_Usage_Data Perf_Mon_getThreadsSummarizedUsageData(Perf_Mon *perf_mon_ctx);
 
 #endif
