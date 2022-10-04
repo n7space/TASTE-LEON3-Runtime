@@ -1,3 +1,6 @@
 [submodule "Leon3-BSP"]
 	path = Leon3-BSP
 	url = https://github.com/n7space/Leon3-BSP
+[submodule "cmake-tools"]
+	path = cmake-tools
+	url = https://github.com/n7space/cmake-tools.git
