@@ -1,8 +1,33 @@
+/**@file
+ * This file is part of the TASTE Leon3 Runtime.
+ *
+ * @copyright 2022 N7 Space Sp. z o.o.
+ *
+ * TASTE Leon3 Runtime was developed under the project AURORA. 
+ * This project has received funding from the European Union’s Horizon 2020 
+ * research and innovation programme under grant agreement No 101004291
+ *
+ * Licensed under the ESA Public License (ESA-PL) Permissive,
+ * Version 2.3 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at 
+ *
+ *     https://essr.esa.int/license/list
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <Perfmon.h>
 
 
-static thread_info Perf_Mon_getThreadInfo(Perf_Mon *perf_mon_ctx, uint64_t threadId)
+static thread_info Perf_Mon_getThreadInfo(Perf_Mon *const perf_mon_ctx, const uint64_t threadId)
 {
+    thread_info empty_info = {};
+
     for (int i = 0; i < RUNTIME_THREAD_COUNT; i++)
     {
         if(threadId == threads_info[i].id)
@@ -10,87 +35,85 @@ static thread_info Perf_Mon_getThreadInfo(Perf_Mon *perf_mon_ctx, uint64_t threa
             return threads_info[i];
         }
     }
+
+    return empty_info;
 }
 
-static bool Perf_Mon_cpuUsageVisitor( Thread_Control *the_thread, void *arg )
+static bool Perf_Mon_cpuUsageVisitor(Thread_Control *the_thread, void *arg)
 {
-    Perf_Mon           *ctx;
-    char               name[MAX_THREAD_NAME_SIZE];
-    float              val;
-    float              meanVal;
-    uint32_t           ival;
-    uint32_t           fval;
-    Timestamp_Control  uptime;
-    Timestamp_Control  used;
+    Perf_Mon *const           context = (Perf_Mon*)arg;
+    char                      thread_name[MAX_THREAD_NAME_SIZE];
+    float                     usage_percent;
+    uint32_t                  integer_val;
+    uint32_t                  float_val;
+    Timestamp_Control         uptime;
+    const Timestamp_Control   used_time = _Thread_Get_CPU_time_used_after_last_reset(the_thread);
 
-    ctx = arg;
-    _Thread_Get_name( the_thread, name, sizeof(name) );
+    
+    _Thread_Get_name( the_thread, thread_name, sizeof(thread_name) );
 
-    used = _Thread_Get_CPU_time_used_after_last_reset(the_thread);
     _TOD_Get_uptime( &uptime );
-    _Timestamp_Subtract(&ctx->uptime_at_last_reset, &uptime, &ctx->total_usage_time);
-    _Timestamp_Divide(&used, &ctx->total_usage_time, &ival, &fval);
+    _Timestamp_Subtract(&context->uptime_at_last_reset, &uptime, &context->total_usage_time);
+    _Timestamp_Divide(&used_time, &context->total_usage_time, &integer_val, &float_val);
 
-    val = (float)fval / TOD_NANOSECONDS_PER_MICROSECOND;
-    val += (float)ival;
+    usage_percent = (float)float_val / TOD_NANOSECONDS_PER_MICROSECOND;
+    usage_percent += (float)integer_val;
 
-    if(val < ctx->usage_data[ctx->task_iterator].cpu_usage_min_val)
+    if(usage_percent < context->usage_data[context->task_iterator].cpu_usage_min_val)
     {
-        ctx->usage_data[ctx->task_iterator].cpu_usage_min_val = val;
+        context->usage_data[context->task_iterator].cpu_usage_min_val = usage_percent;
     }
 
-    if(val > ctx->usage_data[ctx->task_iterator].cpu_usage_max_val)
+    if(usage_percent > context->usage_data[context->task_iterator].cpu_usage_max_val)
     {
-        ctx->usage_data[ctx->task_iterator].cpu_usage_max_val = val;
+        context->usage_data[context->task_iterator].cpu_usage_max_val = usage_percent;
     }
 
-    meanVal = ctx->usage_data[ctx->task_iterator].cpu_usage_mean_val +
-            (val - ctx->usage_data[ctx->task_iterator].cpu_usage_mean_val) /
-            (ctx->benchmarking_ticks + 1);
+    const float mean_val = context->usage_data[context->task_iterator].cpu_usage_mean_val +
+            (usage_percent - context->usage_data[context->task_iterator].cpu_usage_mean_val) /
+            (context->benchmarking_ticks + 1);
 
-    ctx->usage_data[ctx->task_iterator].cpu_usage_mean_val = meanVal;
-    ctx->usage_data[ctx->task_iterator].system_ticks_spent_by_interface_min_val =
-            Perf_Mon_getThreadInfo(ctx, the_thread->Object.id).min_thread_execution_time;
-    ctx->usage_data[ctx->task_iterator].system_ticks_spent_by_interface_max_val =
-            Perf_Mon_getThreadInfo(ctx, the_thread->Object.id).max_thread_execution_time;
-    ctx->usage_data[ctx->task_iterator].system_ticks_spent_by_interface_mean_val =
-            Perf_Mon_getThreadInfo(ctx, the_thread->Object.id).mean_thread_execution_time;
+    context->usage_data[context->task_iterator].cpu_usage_mean_val = mean_val;
+    context->usage_data[context->task_iterator].system_ticks_spent_by_interface_min_val =
+            Perf_Mon_getThreadInfo(context, the_thread->Object.id).min_thread_execution_time;
+    context->usage_data[context->task_iterator].system_ticks_spent_by_interface_max_val =
+            Perf_Mon_getThreadInfo(context, the_thread->Object.id).max_thread_execution_time;
+    context->usage_data[context->task_iterator].system_ticks_spent_by_interface_mean_val =
+            Perf_Mon_getThreadInfo(context, the_thread->Object.id).mean_thread_execution_time;
 
-    uint32_t microse = rtems_clock_get_ticks_per_second();
-
-    ctx->task_iterator++;
+    context->task_iterator++;
     return false;
 }
 
 static bool Perf_Mon_dataInitVisitor(Thread_Control *the_thread, void *arg)
 {
-   Perf_Mon   *ctx;
+   Perf_Mon   *context;
    char       name[MAX_THREAD_NAME_SIZE];
 
-   ctx = arg;
+   context = arg;
    _Thread_Get_name( the_thread, name, sizeof( name ) );
 
-   ctx->usage_data[ctx->task_iterator].id = the_thread->Object.id;
-   strncpy(ctx->usage_data[ctx->task_iterator].thread_name, name, sizeof(name));
-   ctx->usage_data[ctx->task_iterator].thread_name[sizeof(name) - 1] = '\0';
-   ctx->usage_data[ctx->task_iterator].cpu_usage_min_val = FLT_MAX;
-   ctx->usage_data[ctx->task_iterator].system_ticks_spent_by_interface_min_val = (uint64_t)(-1);
+   context->usage_data[context->task_iterator].id = the_thread->Object.id;
+   strncpy(context->usage_data[context->task_iterator].thread_name, name, sizeof(name));
+   context->usage_data[context->task_iterator].thread_name[sizeof(name) - 1] = '\0';
+   context->usage_data[context->task_iterator].cpu_usage_min_val = FLT_MAX;
+   context->usage_data[context->task_iterator].system_ticks_spent_by_interface_min_val = (uint64_t)(-1);
 
-   ctx->task_iterator++;
-   ctx->task_count++;
+   context->task_iterator++;
+   context->task_count++;
    return false;
 }
 
-void Perf_Mon_init(Perf_Mon *perf_mon_ctx)
+void Perf_Mon_init(Perf_Mon *const perf_mon_ctx)
 {
     rtems_cpu_usage_reset();
-    _TOD_Get_uptime( &perf_mon_ctx->CPU_usage_Uptime_at_last_reset );
-    perf_mon_ctx->isInit = false;
+    _TOD_Get_uptime(&perf_mon_ctx->uptime_at_last_reset);
+    perf_mon_ctx->is_initialized = false;
 }
 
-void Perf_Mon_tick(Perf_Mon *perf_mon_ctx)
+void Perf_Mon_tick(Perf_Mon *const perf_mon_ctx)
 {
-    if(!perf_mon_ctx->isInit)
+    if(!perf_mon_ctx->is_initialized)
     {
         perf_mon_ctx->task_count = 0;
         perf_mon_ctx->task_iterator = 0;
@@ -98,23 +121,19 @@ void Perf_Mon_tick(Perf_Mon *perf_mon_ctx)
 
         rtems_task_iterate(Perf_Mon_dataInitVisitor, perf_mon_ctx);
 
-        perf_mon_ctx->isInit = true;
+        perf_mon_ctx->is_initialized = true;
     }
 
-    /*
-     *  When not using nanosecond CPU usage resolution, we have to count
-     *  the number of "ticks" we gave credit for to give the user a rough
-     *  guideline as to what each number means proportionally.
-     */
     _Timestamp_Set_to_zero(&perf_mon_ctx->total_usage_time);
-    perf_mon_ctx->uptime_at_last_reset = perf_mon_ctx->CPU_usage_Uptime_at_last_reset;
     perf_mon_ctx->task_iterator = 0;
 
     rtems_task_iterate(Perf_Mon_cpuUsageVisitor, perf_mon_ctx);
     perf_mon_ctx->benchmarking_ticks++;
 }
 
-Interface_Usage_Data Perf_Mon_getUsageData(Perf_Mon *perf_mon_ctx, enum interfaces_enum interface, double system_frequency)
+Interface_Usage_Data Perf_Mon_getUsageData(Perf_Mon *const perf_mon_ctx, 
+                                           const enum interfaces_enum interface, 
+                                           const double system_frequency)
 {
     Interface_Usage_Data data;
     rtems_id id = threads_info[interface].id;
@@ -142,7 +161,7 @@ Interface_Usage_Data Perf_Mon_getUsageData(Perf_Mon *perf_mon_ctx, enum interfac
     return data;
 }
 
-Summarized_Usage_Data Perf_Mon_getIdleUsageData(Perf_Mon *perf_mon_ctx)
+Summarized_Usage_Data Perf_Mon_getIdleUsageData(Perf_Mon *const perf_mon_ctx)
 {
     Summarized_Usage_Data   data;
     Interface_Usage_Data    usageData;
@@ -157,7 +176,7 @@ Summarized_Usage_Data Perf_Mon_getIdleUsageData(Perf_Mon *perf_mon_ctx)
     return data;
 }
 
-Summarized_Usage_Data Perf_Mon_getThreadsSummarizedUsageData(Perf_Mon *perf_mon_ctx)
+Summarized_Usage_Data Perf_Mon_getThreadsSummarizedUsageData(Perf_Mon *const perf_mon_ctx)
 {
     Summarized_Usage_Data   data;
     Interface_Usage_Data    usageData;

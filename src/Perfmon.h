@@ -3,8 +3,9 @@
  *
  * @copyright 2022 N7 Space Sp. z o.o.
  *
- * TASTE Leon3 Runtime was developed under a programme of,
- * and funded by, the European Space Agency (the "ESA").
+ * TASTE Leon3 Runtime was developed under the project AURORA. 
+ * This project has received funding from the European Union’s Horizon 2020 
+ * research and innovation programme under grant agreement No 101004291
  *
  * Licensed under the ESA Public License (ESA-PL) Permissive,
  * Version 2.3 (the "License");
@@ -59,7 +60,8 @@ typedef struct
 } Interface_Usage_Data;
 
 /**
- * @brief   Struct representing usage data for summarized states
+ * @brief   Struct representing usage data for idle and
+ *          all threads summed up states
  */
 typedef struct 
 {
@@ -74,12 +76,11 @@ typedef struct
  */
 typedef struct 
 {
-    Timestamp_Control        CPU_usage_Uptime_at_last_reset;
     Interface_Usage_Data     usage_data[RUNTIME_THREAD_COUNT];
     uint32_t                 task_iterator;
     uint32_t                 task_count;
     uint64_t                 benchmarking_ticks;
-    bool                     isInit;
+    bool                     is_initialized;
     Timestamp_Control        total_usage_time;
     Timestamp_Control        uptime_at_last_reset;
 } Perf_Mon;
@@ -92,7 +93,7 @@ typedef struct
  *
  * @return  Thread information object
  */
-static thread_info Perf_Mon_getThreadInfo(Perf_Mon *perf_mon_ctx, uint64_t threadId);
+static thread_info Perf_Mon_getThreadInfo(Perf_Mon *const perf_mon_ctx, const uint64_t threadId);
 
 /**
  * @brief   Visitor, updates benchmarking data of the thread,
@@ -117,11 +118,11 @@ static bool Perf_Mon_cpuUsageVisitor(Thread_Control *the_thread, void *arg);
 static bool Perf_Mon_dataInitVisitor(Thread_Control *the_thread, void *arg);
 
 /**
- * @brief   Perfom initializer, should be invoked during benchmarking interface startup
+ * @brief   Perfom initializer, should be invoked on system startup
  *
  * @param[in] perf_mon_ctx     Perfmon context
  */
-void Perf_Mon_init(Perf_Mon *perf_mon_ctx);
+void Perf_Mon_init(Perf_Mon *const perf_mon_ctx);
 
 /**
  * @brief   Perfom tick, updates interfaces benchmarking information data
@@ -129,7 +130,7 @@ void Perf_Mon_init(Perf_Mon *perf_mon_ctx);
  *
  * @param[in] perf_mon_ctx     Perfmon context
  */
-void Perf_Mon_tick(Perf_Mon *perf_mon_ctx);
+void Perf_Mon_tick(Perf_Mon *const perf_mon_ctx);
 
 /**
  * @brief   Gets benchmarking information data for a given thread
@@ -140,7 +141,9 @@ void Perf_Mon_tick(Perf_Mon *perf_mon_ctx);
  * 
  * @return  Returns benchmarking information data
  */
-Interface_Usage_Data Perf_Mon_getUsageData(Perf_Mon *perf_mon_ctx, enum interfaces_enum interface, double system_frequency);
+Interface_Usage_Data Perf_Mon_getUsageData(Perf_Mon *const perf_mon_ctx, 
+                                           const enum interfaces_enum interface, 
+                                           const double system_frequency);
 
 /**
  * @brief   Gets benchmarking information data for Idle state
@@ -149,7 +152,7 @@ Interface_Usage_Data Perf_Mon_getUsageData(Perf_Mon *perf_mon_ctx, enum interfac
  * 
  * @return  Returns benchmarking information data for Idle state
  */
-Summarized_Usage_Data Perf_Mon_getIdleUsageData(Perf_Mon *perf_mon_ctx);
+Summarized_Usage_Data Perf_Mon_getIdleUsageData(Perf_Mon *const perf_mon_ctx);
 
 /**
  * @brief   Gets benchmarking information data for all interfaces summarized
@@ -158,6 +161,6 @@ Summarized_Usage_Data Perf_Mon_getIdleUsageData(Perf_Mon *perf_mon_ctx);
  * 
  * @return  Returns benchmarking information data for all interfaces
  */
-Summarized_Usage_Data Perf_Mon_getThreadsSummarizedUsageData(Perf_Mon *perf_mon_ctx);
+Summarized_Usage_Data Perf_Mon_getThreadsSummarizedUsageData(Perf_Mon *const perf_mon_ctx);
 
 #endif
