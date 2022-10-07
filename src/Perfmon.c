@@ -7,18 +7,13 @@
  * This project has received funding from the European Union’s Horizon 2020 
  * research and innovation programme under grant agreement No 101004291
  *
- * Licensed under the ESA Public License (ESA-PL) Permissive,
- * Version 2.3 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at 
+ * Leon3 Runtime is free software: you can redistribute 
+ * it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
  *
- *     https://essr.esa.int/license/list
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU General Public License
+ * along with Leon3 Runtime. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <Perfmon.h>
@@ -73,13 +68,15 @@ static bool Perf_Mon_cpuUsageVisitor(Thread_Control *the_thread, void *arg)
             (usage_percent - context->usage_data[context->task_iterator].cpu_usage_mean_val) /
             (context->benchmarking_ticks + 1);
 
+    const thread_info thread_info_data = Perf_Mon_getThreadInfo(context, the_thread->Object.id);
+
     context->usage_data[context->task_iterator].cpu_usage_mean_val = mean_val;
     context->usage_data[context->task_iterator].system_ticks_spent_by_interface_min_val =
-            Perf_Mon_getThreadInfo(context, the_thread->Object.id).min_thread_execution_time;
+            thread_info_data.min_thread_execution_time;
     context->usage_data[context->task_iterator].system_ticks_spent_by_interface_max_val =
-            Perf_Mon_getThreadInfo(context, the_thread->Object.id).max_thread_execution_time;
+            thread_info_data.max_thread_execution_time;
     context->usage_data[context->task_iterator].system_ticks_spent_by_interface_mean_val =
-            Perf_Mon_getThreadInfo(context, the_thread->Object.id).mean_thread_execution_time;
+            thread_info_data.mean_thread_execution_time;
 
     context->task_iterator++;
     return false;
@@ -87,10 +84,9 @@ static bool Perf_Mon_cpuUsageVisitor(Thread_Control *the_thread, void *arg)
 
 static bool Perf_Mon_dataInitVisitor(Thread_Control *the_thread, void *arg)
 {
-   Perf_Mon   *context;
-   char       name[MAX_THREAD_NAME_SIZE];
+   Perf_Mon *const      context = (Perf_Mon*)arg;
+   char                 name[MAX_THREAD_NAME_SIZE];
 
-   context = arg;
    _Thread_Get_name( the_thread, name, sizeof( name ) );
 
    context->usage_data[context->task_iterator].id = the_thread->Object.id;
