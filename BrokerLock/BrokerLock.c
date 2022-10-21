@@ -20,16 +20,16 @@
 
 #include <rtems.h>
 
-extern rtems_id brokerLock;
+extern rtems_id broker_Semaphore;
 
 void
 Broker_acquire_lock()
 {
-    while (rtems_semaphore_obtain(brokerLock, RTEMS_WAIT, RTEMS_NO_WAIT) != RTEMS_SUCCESSFUL);
+    while (rtems_semaphore_obtain(broker_Semaphore, RTEMS_WAIT, RTEMS_NO_WAIT) != RTEMS_SUCCESSFUL);
 }
 
 void
 Broker_release_lock()
 {
-    rtems_semaphore_release(brokerLock);
+    rtems_semaphore_release(broker_Semaphore);
 }
