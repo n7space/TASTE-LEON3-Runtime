@@ -55,7 +55,7 @@ Reset_Reason g_reset_reason = Reset_Reason_Unknown;
  */
 static unsigned char* getResetCanaryAddress()
 {
-    return (char*)((uintptr_t)(&__end)
+    return (unsigned char*)((uintptr_t)(&__end)
         + RESET_CANARY_BUFFER_OFFSET + RESET_CANARY_BUFFER_SIZE);
 }
 
@@ -66,7 +66,7 @@ static unsigned char* getResetCanaryAddress()
  */
 static bool isResetCanarySet()
 {
-    unsigned volatile char* buffer = getResetCanaryAddress();
+    volatile unsigned char* buffer = getResetCanaryAddress();
     for (int i = 0; i < RESET_CANARY_BUFFER_SIZE; i++) {
         if (buffer[i] != RESET_CANARY_PATTERN) {
             return false;
@@ -81,7 +81,7 @@ static bool isResetCanarySet()
  */
 static void setResetCanary()
 {
-    unsigned volatile char* buffer = getResetCanaryAddress();
+    volatile unsigned char* buffer = getResetCanaryAddress();
     for (int i = 0; i < RESET_CANARY_BUFFER_SIZE; i++) {
         buffer[i] = RESET_CANARY_PATTERN;
     }
