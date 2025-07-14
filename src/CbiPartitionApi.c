@@ -53,10 +53,11 @@ Reset_Reason g_reset_reason = Reset_Reason_Unknown;
  *
  * @return Reset canary address
  */
-static unsigned char* getResetCanaryAddress()
+static unsigned char *getResetCanaryAddress()
 {
-    return (unsigned char*)((uintptr_t)(&__end)
-        + RESET_CANARY_BUFFER_OFFSET + RESET_CANARY_BUFFER_SIZE);
+	return (unsigned char *)((uintptr_t)(&__end) +
+				 RESET_CANARY_BUFFER_OFFSET +
+				 RESET_CANARY_BUFFER_SIZE);
 }
 
 /**
@@ -66,13 +67,13 @@ static unsigned char* getResetCanaryAddress()
  */
 static bool isResetCanarySet()
 {
-    volatile unsigned char* buffer = getResetCanaryAddress();
-    for (int i = 0; i < RESET_CANARY_BUFFER_SIZE; i++) {
-        if (buffer[i] != RESET_CANARY_PATTERN) {
-            return false;
-        }
-    }
-    return true;
+	volatile unsigned char *buffer = getResetCanaryAddress();
+	for (int i = 0; i < RESET_CANARY_BUFFER_SIZE; i++) {
+		if (buffer[i] != RESET_CANARY_PATTERN) {
+			return false;
+		}
+	}
+	return true;
 }
 
 /**
@@ -81,27 +82,22 @@ static bool isResetCanarySet()
  */
 static void setResetCanary()
 {
-    volatile unsigned char* buffer = getResetCanaryAddress();
-    for (int i = 0; i < RESET_CANARY_BUFFER_SIZE; i++) {
-        buffer[i] = RESET_CANARY_PATTERN;
-    }
+	volatile unsigned char *buffer = getResetCanaryAddress();
+	for (int i = 0; i < RESET_CANARY_BUFFER_SIZE; i++) {
+		buffer[i] = RESET_CANARY_PATTERN;
+	}
 }
 
 void Cbi_Partition_Api_initialize()
 {
-    if (isResetCanarySet()) {
-        // Memory is properly initialized, so reset is assumed
-        g_reset_reason = Reset_Reason_Reset;
-    }
-    else {
-        // Memory is not properly initialized, power-up is assumed
-        g_reset_reason = Reset_Reason_Power;
-    }
-    setResetCanary();
+	if (isResetCanarySet()) {
+		// Memory is properly initialized, so reset is assumed
+		g_reset_reason = Reset_Reason_Reset;
+	} else {
+		// Memory is not properly initialized, power-up is assumed
+		g_reset_reason = Reset_Reason_Power;
+	}
+	setResetCanary();
 }
 
-Reset_Reason Cbi_Partition_Api_getResetReason()
-{
-    return g_reset_reason;
-}
-
+Reset_Reason Cbi_Partition_Api_getResetReason() { return g_reset_reason; }

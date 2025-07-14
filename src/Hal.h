@@ -25,6 +25,7 @@
 #include <Timer.h>
 #include <rtems.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 bool Hal_Init(void);

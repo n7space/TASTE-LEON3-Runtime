@@ -6,9 +6,10 @@ target_sources(Leon3Runtime
                Hal.h
   PRIVATE      Perfmon.c
                CbiPartitionApi.c
-               Hal.h)
+               Hal.c)
 
 target_include_directories(Leon3Runtime
-  PRIVATE   ${CMAKE_SOURCE_DIR}/src)
+  PRIVATE   ${CMAKE_SOURCE_DIR}/src
+            ${CMAKE_SOURCE_DIR}/test/mock)
 
 add_format_target(Leon3Runtime)
