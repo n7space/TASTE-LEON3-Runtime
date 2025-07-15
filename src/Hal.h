@@ -25,9 +25,7 @@
 #include <stdlib.h>
 
 /**
- * @brief               Initializes the Hal module. This function is not thread
- *                      safe, but it is assumed to be used only during system
- *                      initialization, from a single thread/Init task.
+ * @brief               Initializes the Hal module.
  *
  * @return              Bool indicating whether the initialization was
  *                      successful
@@ -60,7 +58,10 @@ int32_t Hal_SemaphoreCreate(void);
 
 /**
  * @brief               Obtains the indicated semaphore, suspending the
- *                      execution of the current thread if necessary
+ *                      execution of the current thread if necessary.
+ *                      This function is not thread safe, but it is 
+                        assumed to be used only during system
+ *                      initialization, from a single thread/Init task.
  *
  * @param[in] id        id of the semaphore
  *
