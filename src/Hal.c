@@ -120,9 +120,5 @@ bool Hal_SemaphoreObtain(int32_t id)
 
 bool Hal_SemaphoreRelease(int32_t id)
 {
-	if (rtems_semaphore_release(id) == RTEMS_SUCCESSFUL) {
-		return true;
-	}
-
-	return false;
+	return rtems_semaphore_release(id) == RTEMS_SUCCESSFUL;
 }
