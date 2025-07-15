@@ -16,7 +16,13 @@
 
 #include <Hal.h>
 
-#define RT_MAX_HAL_SEMAPHORES 1
+#include <Timer.h>
+#include <rtems.h>
+
+#ifndef RT_MAX_HAL_SEMAPHORES
+#define RT_MAX_HAL_SEMAPHORES 8
+#endif
+
 #define NANOSECOND_IN_SECOND 1000000000
 
 static Timer_Apbctrl1 timer_1;
@@ -69,22 +75,14 @@ uint64_t Hal_GetElapsedTimeInNs(void)
 
 bool Hal_SleepNs(uint64_t time_ns)
 {
-	rtems_interval ticks_per_second = rtems_clock_get_ticks_per_second();
-	double ticks_per_ns =
+	const rtems_interval ticks_per_second =
+	    rtems_clock_get_ticks_per_second();
+	const double ticks_per_ns =
 	    (double)ticks_per_second / (double)NANOSECOND_IN_SECOND;
-	double sleep_tick_count = time_ns * ticks_per_ns;
+	const double sleep_tick_count = time_ns * ticks_per_ns;
 
-	uint64_t ticks_before_sleep = Hal_GetElapsedTimeInNs();
-	uint64_t ticks_now = Hal_GetElapsedTimeInNs();
-
-	while (true) {
-		if (ticks_now >= ticks_before_sleep + sleep_tick_count) {
-			break;
-		}
-		ticks_now = Hal_GetElapsedTimeInNs();
-	}
-
-	return true;
+	return rtems_task_wake_after((rtems_interval)sleep_tick_count) ==
+	       RTEMS_SUCCESSFUL;
 }
 
 int32_t Hal_SemaphoreCreate(void)
@@ -93,7 +91,7 @@ int32_t Hal_SemaphoreCreate(void)
 		return 0;
 	}
 
-	rtems_status_code status_code = rtems_semaphore_create(
+	const rtems_status_code status_code = rtems_semaphore_create(
 	    generate_new_hal_semaphore_name(),
 	    1, // Initial value, unlocked
 	    RTEMS_BINARY_SEMAPHORE,
@@ -109,13 +107,8 @@ int32_t Hal_SemaphoreCreate(void)
 
 bool Hal_SemaphoreObtain(int32_t id)
 {
-	rtems_status_code status_code;
-	do {
-		status_code =
-		    rtems_semaphore_obtain(id, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-	} while (status_code != RTEMS_SUCCESSFUL);
-
-	return true;
+	return rtems_semaphore_obtain(id, RTEMS_WAIT, RTEMS_NO_TIMEOUT) ==
+	       RTEMS_SUCCESSFUL;
 }
 
 bool Hal_SemaphoreRelease(int32_t id)
