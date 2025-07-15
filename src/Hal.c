@@ -17,8 +17,7 @@
 #include <Hal.h>
 
 #define RT_MAX_HAL_SEMAPHORES 1
-
-// zmokować rtems
+#define NANOSECOND_IN_SECOND 1000000000
 
 static Timer_Apbctrl1 timer_1;
 static Timer_Apbctrl1 timer_2;
@@ -68,7 +67,23 @@ uint64_t Hal_GetElapsedTimeInNs(void)
 	       Timer_Apbctrl1_getCounterValue(&timer_1);
 }
 
-bool Hal_SleepNs(uint64_t time_ns) { return true; }
+bool Hal_SleepNs(uint64_t time_ns) { 
+	rtems_interval ticks_per_second = rtems_clock_get_ticks_per_second();
+	double ticks_per_ns = (double)ticks_per_second / (double)NANOSECOND_IN_SECOND;
+	double sleep_tick_count = time_ns * ticks_per_ns;
+
+	uint64_t ticks_before_sleep = Hal_GetElapsedTimeInNs();
+	uint64_t ticks_now = Hal_GetElapsedTimeInNs();
+
+	while(true){
+		if(ticks_now >= ticks_before_sleep + sleep_tick_count){
+			break;
+		}
+		ticks_now = Hal_GetElapsedTimeInNs();
+	}
+
+	return true;
+}
 
 int32_t Hal_SemaphoreCreate(void)
 {
