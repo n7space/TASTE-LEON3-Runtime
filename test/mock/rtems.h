@@ -43,4 +43,6 @@ rtems_status_code rtems_semaphore_obtain(
 
 rtems_status_code rtems_semaphore_release( rtems_id id ){}
 
+rtems_interval rtems_clock_get_ticks_per_second(){}
+
 #endif
