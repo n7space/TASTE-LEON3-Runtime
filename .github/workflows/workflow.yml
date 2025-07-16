@@ -9,7 +9,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Before script
+      - name: Create cmake cashe
         run: cmake .
 
       - name: Build
