@@ -1,0 +1,15 @@
+name: Workflow
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+        uses: actions/checkout@v4
+
+      - name: Before script
+        run: cmake .
+
+      - name: Build
+        run: cmake --build .
