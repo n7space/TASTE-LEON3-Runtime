@@ -10,6 +10,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/build/lib)
 set(TESTS_OUTPUT_PATH ${CMAKE_BINARY_DIR}/build/tests)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake-tools)
 
 include(MessageColors)
 include(LoggingHelper)
