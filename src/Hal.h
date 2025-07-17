@@ -50,8 +50,8 @@ uint64_t Hal_GetElapsedTimeInNs(void);
 bool Hal_SleepNs(uint64_t time_ns);
 
 /**
- * @brief               Creates an RTOS backed semaphore. This function is not 
- *                      thread safe, but it is assumed to be used only during 
+ * @brief               Creates an RTOS backed semaphore. This function is not
+ *                      thread safe, but it is assumed to be used only during
  *                      system initialization, from a single thread/Init task.
  *
  * @return              ID of the created semaphore
