@@ -11,7 +11,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Create cmake cashe
+      - name: Pre-build
         run: cmake .
 
       - name: Build
