@@ -15,8 +15,8 @@
 #include <Hal.h>
 
 #include <Timer.h>
-#include <rtems.h>
 #include <interfaces_info.h>
+#include <rtems.h>
 
 #ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
