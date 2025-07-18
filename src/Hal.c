@@ -3,8 +3,6 @@
  *
  * @copyright 2025 N7 Space Sp. z o.o.
  *
- * TODO project description
- *
  * Leon3 Runtime is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the License,
@@ -18,6 +16,7 @@
 
 #include <Timer.h>
 #include <rtems.h>
+#include <interfaces_info.h>
 
 #ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
@@ -25,8 +24,8 @@
 
 #define NANOSECOND_IN_SECOND 1000000000
 
-static Timer_Apbctrl1 timer_1;
-static Timer_Apbctrl1 timer_2;
+Timer_Apbctrl1 timer_1;
+Timer_Apbctrl1 timer_2;
 static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
