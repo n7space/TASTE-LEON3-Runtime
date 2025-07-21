@@ -3,8 +3,6 @@
  *
  * @copyright 2025 N7 Space Sp. z o.o.
  *
- * TODO project description
- *
  * Leon3 Runtime is free software: you can redistribute
  * it and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the License,
@@ -17,6 +15,7 @@
 #include <Hal.h>
 
 #include <Timer.h>
+#include <interfaces_info.h>
 #include <rtems.h>
 
 #ifndef RT_MAX_HAL_SEMAPHORES
@@ -25,8 +24,8 @@
 
 #define NANOSECOND_IN_SECOND 1000000000
 
-static Timer_Apbctrl1 timer_1;
-static Timer_Apbctrl1 timer_2;
+static Timer_Apbctrl1 hal_timer_1;
+static Timer_Apbctrl1 hal_timer_2;
 static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
@@ -54,23 +53,25 @@ bool Hal_Init(void)
 	config_2.isChained = true;
 	config_2.reloadValue = TIMER_START_VALUE;
 
-	Timer_Apbctrl1_init(Timer_Id_3, &timer_1, defaultInterruptHandler);
-	Timer_Apbctrl1_setBaseScalerReloadValue(&timer_1, TIMER_SCALER_VALUE);
-	Timer_Apbctrl1_setConfigRegisters(&timer_1, &config_1);
-	Timer_Apbctrl1_start(&timer_1);
+	Timer_Apbctrl1_init(Timer_Id_3, &hal_timer_1, defaultInterruptHandler);
+	Timer_Apbctrl1_setBaseScalerReloadValue(&hal_timer_1,
+						TIMER_SCALER_VALUE);
+	Timer_Apbctrl1_setConfigRegisters(&hal_timer_1, &config_1);
+	Timer_Apbctrl1_start(&hal_timer_1);
 
-	Timer_Apbctrl1_init(Timer_Id_4, &timer_2, defaultInterruptHandler);
-	Timer_Apbctrl1_setBaseScalerReloadValue(&timer_2, TIMER_SCALER_VALUE);
-	Timer_Apbctrl1_setConfigRegisters(&timer_2, &config_2);
-	Timer_Apbctrl1_start(&timer_2);
+	Timer_Apbctrl1_init(Timer_Id_4, &hal_timer_2, defaultInterruptHandler);
+	Timer_Apbctrl1_setBaseScalerReloadValue(&hal_timer_2,
+						TIMER_SCALER_VALUE);
+	Timer_Apbctrl1_setConfigRegisters(&hal_timer_2, &config_2);
+	Timer_Apbctrl1_start(&hal_timer_2);
 
 	return true;
 }
 
 uint64_t Hal_GetElapsedTimeInNs(void)
 {
-	return (uint64_t)Timer_Apbctrl1_getCounterValue(&timer_2) << 32 |
-	       Timer_Apbctrl1_getCounterValue(&timer_1);
+	return (uint64_t)Timer_Apbctrl1_getCounterValue(&hal_timer_2) << 32 |
+	       Timer_Apbctrl1_getCounterValue(&hal_timer_1);
 }
 
 bool Hal_SleepNs(uint64_t time_ns)
