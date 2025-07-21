@@ -24,8 +24,8 @@
 
 #define NANOSECOND_IN_SECOND 1000000000
 
-Timer_Apbctrl1 timer_1;
-Timer_Apbctrl1 timer_2;
+static Timer_Apbctrl1 timer_1;
+static Timer_Apbctrl1 timer_2;
 static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
