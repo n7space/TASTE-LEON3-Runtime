@@ -18,15 +18,15 @@
 #include <rtems.h>
 
 #ifndef RT_MAX_CYCLIC_INTERFACES
-#define RT_MAX_CYCLIC_INTERFACES 8
+#define RT_MAX_CYCLIC_INTERFACES RUNTIME_THREAD_COUNT
 #endif
 
 #define NANOSECOND_IN_MILISECOND 1000000
 
 extern rtems_name generate_new_partition_timer_name();
-static void ScheduleNextTick(rtems_id timer_id);
-static void TimerCallback(rtems_id timer_id, void *unused);
-static void update_execution_time_data(uint32_t thread_id,
+static void schedule_next_tick(const rtems_id timer_id);
+static void timer_callback(rtems_id timer_id, void *unused);
+static void update_execution_time_data(const uint32_t thread_id,
 				       const uint64_t thread_execution_time);
 
 typedef void (*call_function)(const char *buf, size_t len);
@@ -49,7 +49,7 @@ struct CyclicEmptyRequestData {
 static struct CyclicRequestData cyclic_reqeust_data[RT_MAX_CYCLIC_INTERFACES];
 static struct CyclicEmptyRequestData empty_request;
 
-static void ScheduleNextTick(rtems_id timer_id)
+static void schedule_next_tick(const rtems_id timer_id)
 {
 	uint32_t index = 0;
 	for (uint32_t index = 0; index < RT_MAX_CYCLIC_INTERFACES; index++) {
@@ -63,10 +63,10 @@ static void ScheduleNextTick(rtems_id timer_id)
 	    cyclic_reqeust_data[index].interval_ticks;
 	rtems_interval delta = cyclic_reqeust_data[index].next_wakeup_ticks -
 			       rtems_clock_get_ticks_since_boot();
-	rtems_timer_fire_after(timer_id, delta, TimerCallback, NULL);
+	rtems_timer_fire_after(timer_id, delta, timer_callback, NULL);
 }
 
-static void TimerCallback(rtems_id timer_id, void *unused)
+static void timer_callback(rtems_id timer_id, void *unused)
 {
 	uint32_t index = 0;
 	for (uint32_t index = 0; index < RT_MAX_CYCLIC_INTERFACES; index++) {
@@ -79,10 +79,10 @@ static void TimerCallback(rtems_id timer_id, void *unused)
 	rtems_message_queue_send(cyclic_reqeust_data[index].queue_id,
 				 &empty_request,
 				 cyclic_reqeust_data[index].request_size);
-	ScheduleNextTick(cyclic_reqeust_data[index].timer_id);
+	schedule_next_tick(cyclic_reqeust_data[index].timer_id);
 }
 
-static void update_execution_time_data(uint32_t thread_id,
+static void update_execution_time_data(const uint32_t thread_id,
 				       const uint64_t thread_execution_time)
 {
 
@@ -137,7 +137,7 @@ bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns, uint32_t queue_id,
 	cyclic_reqeust_data[index].request_size = request_size;
 	cyclic_reqeust_data[index].is_used = true;
 
-	ScheduleNextTick(cyclic_reqeust_data[index].timer_id);
+	schedule_next_tick(cyclic_reqeust_data[index].timer_id);
 
 	return true;
 }
