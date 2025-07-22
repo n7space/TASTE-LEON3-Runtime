@@ -29,13 +29,11 @@ void _Timestamp_Set_to_zero(Timestamp_Control *_time) {}
 
 Timestamp_Control
 _Thread_Get_CPU_time_used_after_last_reset(Thread_Control *the_thread)
-{
-}
+{ return 0; }
 
 size_t _Thread_Get_name(const Thread_Control *the_thread, char *buffer,
 			size_t buffer_size)
-{
-}
+{ return 0; }
 
 void _Timestamp_Subtract(const Timestamp_Control *_start,
 			 const Timestamp_Control *_end,

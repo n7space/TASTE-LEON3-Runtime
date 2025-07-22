@@ -49,6 +49,6 @@ void Timer_Apbctrl1_setConfigRegisters(Timer_Apbctrl1 *const timer, const Timer_
 
 void Timer_Apbctrl1_start(Timer_Apbctrl1 *const timer){}
 
-uint32_t Timer_Apbctrl1_getCounterValue(const Timer_Apbctrl1 *const timer){}
+uint32_t Timer_Apbctrl1_getCounterValue(const Timer_Apbctrl1 *const timer){ return 0; }
 
 #endif

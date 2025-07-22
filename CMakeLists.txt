@@ -37,6 +37,9 @@ set(CLANG_WARNINGS -Wall
                    -Wsign-conversion
                    -Wnull-dereference
                    -Wdouble-promotion
+                   -Wbad-function-cast
+                   -Wno-unused-parameter
+                   -Wno-array-bounds
                    -Wformat=2)
 
 set(GCC_WARNINGS ${CLANG_WARNINGS}
@@ -51,7 +54,15 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(PROJECT_WARNINGS ${GCC_WARNINGS})
 endif()
 
+file(GLOB_RECURSE MOCK_DIR "test/mock/*.c" "test/mock/*.h")
+
+set_source_files_properties(
+    MOCK_DIR
+    PROPERTIES APPEND_STRING PROPERTY COMPILE_FLAGS " -w"
+)
+
 target_compile_options(common_build_options INTERFACE ${PROJECT_WARNINGS})
+add_compile_options(${PROJECT_WARNINGS})
 
 include(CppCheck)
 include(ClangTidy)
