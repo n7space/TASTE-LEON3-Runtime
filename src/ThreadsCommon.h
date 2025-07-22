@@ -28,14 +28,19 @@
  * @brief               Creates a timer that periodically sends a request to
  *                      the indicated queue. The request is empty.
  *
- * @param[in] interval_ns    cyclic interval period, expressed in nanoseconds
- * @param[in] queue_id       ID of the queue to send the request to
- * @param[in] request_size   size of the request data
+ * @param[in] interval_ns         cyclic interval period, expressed in
+ * nanoseconds
+ * @param[in] dispatch_offset_ns  cyclic interval dispatch offset, expressed in
+ * nanoseconds
+ * @param[in] queue_id            ID of the queue to send the request to
+ * @param[in] request_size        size of the request data
  *
  * @return              Bool indicating whether the creation was
  *                      successful
  */
-bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns, uint32_t queue_id,
+bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
+				       uint64_t dispatch_offset_ns,
+				       uint32_t queue_id,
 				       uint32_t request_size);
 
 /**

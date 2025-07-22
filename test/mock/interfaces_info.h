@@ -14,8 +14,8 @@ typedef struct {
 	int max_thread_execution_time;
 	int mean_thread_execution_time;
 	char *name;
-    uint64_t thread_execution_time;
-    uint64_t execution_time_counter;
+	uint64_t thread_execution_time;
+	uint64_t execution_time_counter;
 } thread_info;
 
 enum interfaces_enum { INTERFACE_MOCK };
