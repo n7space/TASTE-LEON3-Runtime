@@ -30,8 +30,8 @@
 #define NANOSECOND_IN_MILISECOND 1000000
 
 extern rtems_name generate_new_partition_timer_name();
-static void schedule_next_tick(uint32_t cyclic_request_data_index);
-static void timer_callback(rtems_id timer_id, void *unused);
+static void schedule_next_tick(const uint32_t cyclic_request_data_index);
+static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index);
 static void update_execution_time_data(const uint32_t thread_id,
 				       const uint64_t thread_execution_time);
 
@@ -66,20 +66,15 @@ static void schedule_next_tick(const uint32_t cyclic_request_data_index)
 	rtems_interval delta =
 	    cyclic_reqeust_data[cyclic_request_data_index].next_wakeup_ticks -
 	    rtems_clock_get_ticks_since_boot();
-	rtems_timer_fire_after(timer_id, delta, timer_callback, NULL);
+	rtems_timer_fire_after(timer_id, delta, timer_callback,
+			       (void *)cyclic_request_data_index);
 }
 
-static void timer_callback(rtems_id timer_id, void *unused)
+static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index)
 {
-	uint32_t index = 0;
-	for (uint32_t index = 0; index < RT_MAX_CYCLIC_INTERFACES; index++) {
-		if (!cyclic_reqeust_data[index].is_used &&
-		    cyclic_reqeust_data[index].timer_id == timer_id) {
-			break;
-		}
-	}
+	uintptr_t index = (uintptr_t)cyclic_request_data_index;
 
-	rtems_message_queue_send(cyclic_reqeust_data[index].queue_id,
+	rtems_message_queue_send((rtems_id)cyclic_reqeust_data[index].queue_id,
 				 &empty_request,
 				 cyclic_reqeust_data[index].request_size);
 	schedule_next_tick(index);

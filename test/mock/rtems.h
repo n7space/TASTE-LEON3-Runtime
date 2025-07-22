@@ -31,31 +31,33 @@ rtems_name rtems_build_name( char c1, char c2, char c3, char c4 );
 
 #define RTEMS_MILLISECONDS_TO_TICKS( _ms ) 100
 
-  rtems_status_code rtems_semaphore_create(
+rtems_status_code rtems_semaphore_create(
   rtems_name          name,
   uint32_t            count,
   rtems_attribute     attribute_set,
   rtems_task_priority priority_ceiling,
   rtems_id           *id
-){}
+)
+{ return 0; }
 
 rtems_status_code rtems_semaphore_obtain(
   rtems_id       id,
   rtems_option   option_set,
   rtems_interval timeout
-){}
+)
+{ return 0; }
 
 typedef void rtems_timer_service_routine;
 
 typedef rtems_timer_service_routine ( *rtems_timer_service_routine_entry )( rtems_id, void * );
 
-rtems_status_code rtems_semaphore_release( rtems_id id ){}
+rtems_status_code rtems_semaphore_release( rtems_id id ){ return 0; }
 
-rtems_interval rtems_clock_get_ticks_per_second(){}
+rtems_interval rtems_clock_get_ticks_per_second(){ return 0; }
 
-rtems_interval rtems_clock_get_ticks_since_boot(){}
+rtems_interval rtems_clock_get_ticks_since_boot(){ return 0; }
 
-rtems_status_code rtems_task_wake_after( rtems_interval ticks ){}
+rtems_status_code rtems_task_wake_after( rtems_interval ticks ){ return 0; }
 
 rtems_status_code rtems_timer_fire_after(
   rtems_id                          id,
@@ -63,14 +65,15 @@ rtems_status_code rtems_timer_fire_after(
   rtems_timer_service_routine_entry routine,
   void                             *user_data
 )
-{}
+{ return 0; }
 
 rtems_status_code rtems_message_queue_send(
   rtems_id    id,
   const void *buffer,
   size_t      size
-){}
+)
+{ return 0; }
 
-rtems_status_code rtems_timer_create( rtems_name name, rtems_id *id ){}
+rtems_status_code rtems_timer_create( rtems_name name, rtems_id *id ){ return 0; }
 
 #endif
