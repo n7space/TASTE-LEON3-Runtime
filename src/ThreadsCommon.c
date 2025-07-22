@@ -109,7 +109,7 @@ bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
 				       uint64_t dispatch_offset_ns,
 				       uint32_t queue_id, uint32_t request_size)
 {
-	assert(request_size == 0);
+	assert(request_size <= EMPTY_REQUEST_DATA_BUFFER_SIZE);
 	memset(empty_request.m_data, 0, EMPTY_REQUEST_DATA_BUFFER_SIZE);
 
 	bool empty_slot_found = false;
@@ -133,10 +133,10 @@ bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
 	}
 
 	cyclic_reqeust_data[index].next_wakeup_ticks =
-	    RTEMS_MILLISECONDS_TO_TICKS(dispatch_offset_ns *
+	    RTEMS_MILLISECONDS_TO_TICKS(dispatch_offset_ns /
 					NANOSECOND_IN_MILISECOND);
 	cyclic_reqeust_data[index].interval_ticks =
-	    RTEMS_MILLISECONDS_TO_TICKS(interval_ns * NANOSECOND_IN_MILISECOND);
+	    RTEMS_MILLISECONDS_TO_TICKS(interval_ns / NANOSECOND_IN_MILISECOND);
 	cyclic_reqeust_data[index].queue_id = queue_id;
 	cyclic_reqeust_data[index].request_size = request_size;
 	cyclic_reqeust_data[index].is_used = true;
