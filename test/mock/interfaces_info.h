@@ -9,11 +9,11 @@
 
 
 typedef struct {
-	int id;
+	uint32_t id;
 	uint64_t min_thread_execution_time;
 	uint64_t max_thread_execution_time;
 	uint64_t mean_thread_execution_time;
-	char *name;
+	uint8_t *name;
 	uint64_t thread_execution_time;
 	uint64_t execution_time_counter;
 } thread_info;
