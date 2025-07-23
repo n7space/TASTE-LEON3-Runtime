@@ -25,8 +25,6 @@
 #define RT_MAX_CYCLIC_INTERFACES RUNTIME_THREAD_COUNT
 #endif
 
-#define EMPTY_REQUEST_DATA_BUFFER_SIZE 8
-
 #define NANOSECOND_IN_MILISECOND 1000000
 
 extern rtems_name generate_new_partition_timer_name();
@@ -45,16 +43,9 @@ struct CyclicRequestData {
 	uint32_t request_size;
 };
 
-struct CyclicEmptyRequestData {
-	uint32_t m_sender_pid;
-	uint32_t m_length;
-	uint8_t m_data[EMPTY_REQUEST_DATA_BUFFER_SIZE]
-	    __attribute__((aligned(16)));
-};
-
 static uint32_t cyclic_requests_count = 0;
 static struct CyclicRequestData cyclic_request_data[RT_MAX_CYCLIC_INTERFACES];
-static struct CyclicEmptyRequestData empty_request;
+static struct CyclicInterfaceEmptyRequestData empty_request;
 
 static void schedule_next_tick(const uint32_t cyclic_request_data_index)
 {
@@ -110,7 +101,7 @@ bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
 				       uint64_t dispatch_offset_ns,
 				       uint32_t queue_id, uint32_t request_size)
 {
-	assert(request_size <= EMPTY_REQUEST_DATA_BUFFER_SIZE);
+	assert(request_size <= sizeof(struct CyclicInterfaceEmptyRequestData));
 	memset(empty_request.m_data, 0, EMPTY_REQUEST_DATA_BUFFER_SIZE);
 
 	if (cyclic_requests_count >= RT_MAX_CYCLIC_INTERFACES) {

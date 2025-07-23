@@ -24,6 +24,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define EMPTY_REQUEST_DATA_BUFFER_SIZE 8
+
+/**
+ * @brief   Struct representing empty request sent periodically to cyclic
+ * interface
+ */
+struct CyclicInterfaceEmptyRequestData {
+	uint32_t m_sender_pid;
+	uint32_t m_length;
+	uint8_t m_data[EMPTY_REQUEST_DATA_BUFFER_SIZE]
+	    __attribute__((aligned(16)));
+};
+
 /**
  * @brief               Creates a timer that periodically sends a request to
  *                      the indicated queue. The request is empty.
