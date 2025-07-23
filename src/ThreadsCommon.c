@@ -43,7 +43,6 @@ struct CyclicRequestData {
 	rtems_interval interval_ticks;
 	uint32_t queue_id;
 	uint32_t request_size;
-	bool is_used;
 };
 
 struct CyclicEmptyRequestData {
@@ -53,18 +52,19 @@ struct CyclicEmptyRequestData {
 	    __attribute__((aligned(16)));
 };
 
-static struct CyclicRequestData cyclic_reqeust_data[RT_MAX_CYCLIC_INTERFACES];
+static uint32_t cyclic_requests_count = 0;
+static struct CyclicRequestData cyclic_request_data[RT_MAX_CYCLIC_INTERFACES];
 static struct CyclicEmptyRequestData empty_request;
 
 static void schedule_next_tick(const uint32_t cyclic_request_data_index)
 {
 	const rtems_id timer_id =
-	    cyclic_reqeust_data[cyclic_request_data_index].timer_id;
+	    cyclic_request_data[cyclic_request_data_index].timer_id;
 
-	cyclic_reqeust_data[cyclic_request_data_index].next_wakeup_ticks +=
-	    cyclic_reqeust_data[cyclic_request_data_index].interval_ticks;
+	cyclic_request_data[cyclic_request_data_index].next_wakeup_ticks +=
+	    cyclic_request_data[cyclic_request_data_index].interval_ticks;
 	rtems_interval delta =
-	    cyclic_reqeust_data[cyclic_request_data_index].next_wakeup_ticks -
+	    cyclic_request_data[cyclic_request_data_index].next_wakeup_ticks -
 	    rtems_clock_get_ticks_since_boot();
 	rtems_timer_fire_after(timer_id, delta, timer_callback,
 			       (void *)cyclic_request_data_index);
@@ -74,9 +74,10 @@ static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index)
 {
 	uintptr_t index = (uintptr_t)cyclic_request_data_index;
 
-	rtems_message_queue_send((rtems_id)cyclic_reqeust_data[index].queue_id,
+	rtems_message_queue_send((rtems_id)cyclic_request_data[index].queue_id,
 				 &empty_request,
-				 cyclic_reqeust_data[index].request_size);
+				 cyclic_request_data[index].request_size);
+
 	schedule_next_tick(index);
 }
 
@@ -112,37 +113,28 @@ bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
 	assert(request_size <= EMPTY_REQUEST_DATA_BUFFER_SIZE);
 	memset(empty_request.m_data, 0, EMPTY_REQUEST_DATA_BUFFER_SIZE);
 
-	bool empty_slot_found = false;
-	uint32_t index = 0;
-
-	for (index = 0; index < RT_MAX_CYCLIC_INTERFACES; index++) {
-		if (!cyclic_reqeust_data[index].is_used) {
-			empty_slot_found = true;
-		}
-	}
-
-	if (!empty_slot_found) {
+	if (cyclic_requests_count >= RT_MAX_CYCLIC_INTERFACES) {
 		return false;
 	}
 
 	rtems_name name = generate_new_partition_timer_name();
-	const rtems_status_code timer_creation_status =
-	    rtems_timer_create(name, &cyclic_reqeust_data[index].timer_id);
+	const rtems_status_code timer_creation_status = rtems_timer_create(
+	    name, &cyclic_request_data[cyclic_requests_count].timer_id);
 	if (timer_creation_status != RTEMS_SUCCESSFUL) {
 		return false;
 	}
 
-	cyclic_reqeust_data[index].next_wakeup_ticks =
+	cyclic_request_data[cyclic_requests_count].next_wakeup_ticks =
 	    RTEMS_MILLISECONDS_TO_TICKS(dispatch_offset_ns /
 					NANOSECOND_IN_MILISECOND);
-	cyclic_reqeust_data[index].interval_ticks =
+	cyclic_request_data[cyclic_requests_count].interval_ticks =
 	    RTEMS_MILLISECONDS_TO_TICKS(interval_ns / NANOSECOND_IN_MILISECOND);
-	cyclic_reqeust_data[index].queue_id = queue_id;
-	cyclic_reqeust_data[index].request_size = request_size;
-	cyclic_reqeust_data[index].is_used = true;
+	cyclic_request_data[cyclic_requests_count].queue_id = queue_id;
+	cyclic_request_data[cyclic_requests_count].request_size = request_size;
 
-	schedule_next_tick(index);
+	schedule_next_tick(cyclic_requests_count);
 
+	cyclic_requests_count++;
 	return true;
 }
 
