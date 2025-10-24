@@ -18,6 +18,8 @@
 
 #include <Monitor.h>
 
+Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
+
 bool Monitor_Init() { return true; }
 
 bool Monitor_MonitoringTick(void) {}

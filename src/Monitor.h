@@ -70,6 +70,8 @@ typedef void (*Monitor_MessageQueueOverflow)(
     const enum interfaces_enum interface,
     uint32_t number_of_overflowed_messages);
 
+extern Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
+
 /**
  * @brief                       Initializes the Monitor module.
  *
