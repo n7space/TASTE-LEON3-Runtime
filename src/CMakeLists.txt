@@ -5,12 +5,10 @@ target_sources(Leon3Runtime
                CbiPartitionApi.h
                Hal.h
                ThreadsCommon.h
-               Monitor.h
   PRIVATE      Perfmon.c
                CbiPartitionApi.c
                Hal.c
-               ThreadsCommon.c
-               Monitor.c)
+               ThreadsCommon.c)
 
 target_include_directories(Leon3Runtime
   PRIVATE   ${CMAKE_SOURCE_DIR}/src
