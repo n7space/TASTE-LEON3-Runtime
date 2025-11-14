@@ -2,6 +2,7 @@
 #define INTERFACES_INFO_H
 
 #include <stdint.h>
+#include <rtems.h>
 
 #define MAX_THREAD_NAME_SIZE 32
 #define RUNTIME_THREAD_COUNT 8
@@ -20,6 +21,10 @@ typedef struct {
 
 enum interfaces_enum { INTERFACE_MOCK };
 
-thread_info threads_info[RUNTIME_THREAD_COUNT];
+extern thread_info threads_info[RUNTIME_THREAD_COUNT];
+
+extern rtems_id interface_to_queue_map[RUNTIME_THREAD_COUNT];
+
+extern uint32_t maximum_queued_items[RUNTIME_THREAD_COUNT];
 
 #endif

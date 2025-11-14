@@ -97,9 +97,10 @@ static void update_execution_time_data(const uint32_t thread_id,
 	threads_info[thread_id].execution_time_counter++;
 }
 
-bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
-				       uint64_t dispatch_offset_ns,
-				       uint32_t queue_id, uint32_t request_size)
+bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
+				       const uint64_t dispatch_offset_ns,
+				       const uint32_t queue_id,
+				       const uint32_t request_size)
 {
 	assert(request_size <= sizeof(struct CyclicInterfaceEmptyRequestData));
 	memset(empty_request.m_data, 0, EMPTY_REQUEST_DATA_BUFFER_SIZE);
@@ -129,8 +130,9 @@ bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
 	return true;
 }
 
-bool ThreadsCommon_ProcessRequest(void *request_data, uint32_t request_size,
-				  void *user_function, uint32_t thread_id)
+bool ThreadsCommon_ProcessRequest(const void *const request_data,
+				  const uint32_t request_size,
+				  void *user_function, const uint32_t thread_id)
 {
 	call_function cast_user_function = (call_function)user_function;
 
@@ -144,4 +146,15 @@ bool ThreadsCommon_ProcessRequest(void *request_data, uint32_t request_size,
 	    thread_id, threads_info[thread_id].thread_execution_time);
 
 	return true;
+}
+
+bool ThreadsCommon_SendRequest(const void *const request_data,
+			       const uint32_t request_size,
+			       const uint32_t queue_id,
+			       const uint32_t thread_id)
+{
+	const rtems_status_code result = rtems_message_queue_send(
+	    (rtems_id)queue_id, request_data, request_size);
+
+	return result == RTEMS_SUCCESSFUL;
 }

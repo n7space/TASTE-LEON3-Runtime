@@ -8,6 +8,7 @@
 #define RTEMS_SUCCESSFUL 1
 #define RTEMS_WAIT 0x00000000
 #define RTEMS_NO_TIMEOUT 0x00000001
+#define RTEMS_TOO_MANY 3
 
 typedef int rtems_status_code;
 typedef int rtems_id;
